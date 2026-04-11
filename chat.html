@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-MVSHZFLK');</script>
+    <!-- End Google Tag Manager -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리멤버AI - 따뜻한 대화</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background-color: #A0C0D7; /* KakaoTalk blue-ish background */ height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* Chat Header */
+        .chat-header {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        .chat-header .back-btn { font-size: 1.5rem; color: var(--navy-primary); cursor: pointer; text-decoration: none; }
+        .chat-user-info { display: flex; align-items: center; gap: 12px; }
+        .chat-user-info img { width: 45px; height: 45px; border-radius: 50%; background: #eee; }
+        .chat-user-name { font-weight: 700; font-size: 1.2rem; color: var(--navy-primary); }
+
+        /* Exit Button */
+        .btn-exit {
+            background-color: #eee;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-exit:hover { background-color: #ddd; color: var(--navy-primary); }
+
+        /* Private Toggle Area */
+        .chat-footer-options {
+            background-color: white;
+            padding: 10px 20px 0;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .private-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        /* Toggle Switch Style */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider { background-color: var(--navy-primary); }
+        input:checked + .slider:before { transform: translateX(22px); }
+        .slider.round { border-radius: 24px; }
+        .slider.round:before { border-radius: 50%; }
+
+        /* Chat Area */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            scrollbar-width: none; /* Firefox */
+        }
+        .chat-messages::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
+
+        .date-divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+        .date-divider span {
+            background-color: rgba(0, 0, 0, 0.1);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Message Bubbles */
+        .message { display: flex; align-items: flex-start; gap: 10px; max-width: 85%; }
+        .message.received { align-self: flex-start; }
+        .message.sent { align-self: flex-end; flex-direction: row-reverse; }
+
+        .message-content {
+            padding: 12px 18px;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: relative;
+        }
+        .received .message-content { background-color: white; color: #333; border-top-left-radius: 2px; }
+        .sent .message-content { background-color: #FEE500; color: #333; border-top-right-radius: 2px; }
+
+        .message-time { align-self: flex-end; font-size: 0.75rem; color: rgba(0,0,0,0.5); margin: 0 5px; min-width: 50px; }
+
+        .security-notice {
+            align-self: center;
+            background-color: rgba(255, 255, 255, 0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            color: var(--navy-primary);
+            text-align: center;
+            margin: 10px 0;
+            border: 1px dashed var(--navy-primary);
+        }
+
+        /* Input Area */
+        .chat-input-area {
+            background-color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-family: 'Noto Sans KR', sans-serif;
+            outline: none;
+        }
+
+        /* Microphone Button */
+        .record-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 5px;
+            transition: var(--transition);
+        }
+        .record-btn.recording {
+            color: #ff4d4d;
+            transform: scale(1.2);
+            animation: pulse 1s infinite;
+        }
+
+        /* Recording Status UI */
+        .recording-status {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(13, 34, 71, 0.95);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .pulse {
+            width: 15px;
+            height: 15px;
+            background: #ff4d4d;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+        .stop-btn {
+            background: white;
+            color: var(--navy-primary);
+            border: none;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.6; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .send-btn {
+            background-color: #FEE500;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+        .send-btn:hover { background-color: #E6CF00; }
+
+        /* Animation */
+        .message { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MVSHZFLK"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <header class="chat-header">
+        <div class="chat-user-info">
+            <a href="index.html" class="back-btn">←</a>
+            <img src="logo.png" alt="리멤버AI">
+            <span class="chat-user-name">리멤버AI 상담사</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn-exit" onclick="confirmExit()">대화 종료</button>
+        </div>
+    </header>
+
+    <div class="chat-messages" id="chatMessages">
+        <div class="date-divider">
+            <span>2024년 4월 12일 금요일</span>
+        </div>
+
+        <div class="security-notice">
+            "이 대화는 선생님과 저만 아는 비밀이니 안심하세요."
+        </div>
+
+        <!-- AI Message -->
+        <div class="message received">
+            <div class="message-content">
+                안녕하세요, 선생님. 오늘 하루는 어떻게 보내셨나요? <br>
+                선생님과 함께 소중한 인생 이야기를 나누게 되어 영광입니다.
+            </div>
+            <span class="message-time">오후 2:00</span>
+        </div>
+
+        <!-- AI Message -->
+        <div class="message received">
+            <div class="message-content">
+                이번 주는 <b>'소중한 아이를 처음 품에 안았던 순간'</b>에 대해 이야기 나누고 싶어요. <br>
+                선생님, 자제분(아이)을 처음 만나셨을 때 그 떨림과 감동을 혹시 기억하시나요? <br>
+                그때의 마음을 자녀분에게 들려주신다면 정말 귀한 선물이 될 것 같아요.
+            </div>
+            <span class="message-time">오후 2:01</span>
+        </div>
+
+        <!-- User Message Sample (Hidden initially in real logic, but shown for design) -->
+        <!-- <div class="message sent">
+            <div class="message-content">
+                어릴 때 동네 친구들과 냇가에서 물장구치던 게 생각나네.
+            </div>
+            <span class="message-time">오후 2:05</span>
+        </div> -->
+    </div>
+
+    <div class="chat-footer-options">
+        <div class="private-status">
+            <span id="privateStatus">비밀 유지 중 🔒</span>
+            <label class="switch">
+                <input type="checkbox" id="privateToggle" checked onchange="handlePrivateToggle()">
+                <span class="slider round"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="chat-input-area">
+        <button id="recordBtn" class="record-btn" onclick="toggleRecording()">🎤</button>
+        <input type="text" id="userInput" placeholder="메시지를 입력하거나 마이크를 눌러 말씀하세요..." onkeypress="if(event.keyCode==13) sendMessage()">
+        <button class="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+
+    <div id="recordingStatus" class="recording-status" style="display: none;">
+        <div class="pulse"></div>
+        <span>선생님의 말씀을 듣고 있어요...</span>
+        <button onclick="stopRecording()" class="stop-btn">완료</button>
+    </div>
+
+    <script>
+        let isRecording = false;
+
+        function confirmExit() {
+            if (confirm("오늘 대화를 여기까지 할까요? 소중한 기록은 안전하게 저장되었습니다.")) {
+                window.location.href = 'index.html';
+            }
+        }
+
+        function handlePrivateToggle() {
+            const isPrivate = document.getElementById('privateToggle').checked;
+            const statusText = document.getElementById('privateStatus');
+            const chatMessages = document.getElementById('chatMessages');
+            
+            const notice = document.createElement('div');
+            notice.className = 'security-notice';
+            
+            if (isPrivate) {
+                statusText.innerText = "비밀 유지 중 🔒";
+                notice.innerText = "이후 대화는 자녀에게 공개되지 않는 '비밀 모드'로 전환되었습니다.";
+            } else {
+                statusText.innerText = "자녀에게 공유됨 💝";
+                notice.innerText = "이후 대화는 자녀가 함께 볼 수 있는 '공유 모드'로 전환되었습니다.";
+            }
+            chatMessages.appendChild(notice);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function toggleRecording() {
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        function startRecording() {
+            isRecording = true;
+            document.getElementById('recordingStatus').style.display = 'flex';
+            document.getElementById('recordBtn').classList.add('recording');
+            // 실제 구현 시 Web MediaRecorder API 등을 사용
+            console.log("Recording started...");
+        }
+
+        function stopRecording() {
+            isRecording = false;
+            document.getElementById('recordingStatus').style.display = 'none';
+            document.getElementById('recordBtn').classList.remove('recording');
+            
+            // 시뮬레이션: 녹음된 내용이 텍스트로 변환되었다고 가정
+            const simulatedText = "우리 큰애가 태어났을 때 눈이 참 맑았어. 그때 그 떨림은 지금도 잊지 못하지.";
+            document.getElementById('userInput').value = simulatedText;
+            
+            // 자동으로 메시지 전송
+            setTimeout(sendMessage, 500);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const messageText = input.value.trim();
+            if (messageText === "") return;
+
+            const chatMessages = document.getElementById('chatMessages');
+            const now = new Date();
+            const timeStr = (now.getHours() > 12 ? '오후 ' + (now.getHours()-12) : '오전 ' + now.getHours()) + ':' + now.getMinutes().toString().padStart(2, '0');
+
+            // Add user message
+            const userMsg = `
+                <div class="message sent">
+                    <div class="message-content">${messageText}</div>
+                    <span class="message-time">${timeStr}</span>
+                </div>
+            `;
+            chatMessages.innerHTML += userMsg;
+            input.value = "";
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Simple AI Auto-Reply after 1 second
+            setTimeout(() => {
+                const aiMsg = `
+                    <div class="message received">
+                        <div class="message-content">네, 선생님. 정말 소중하고 따뜻한 기억이네요. 그 당시에 느끼셨던 기분이나 함께했던 사람들에 대해 조금 더 자세히 들려주실 수 있을까요?</div>
+                        <span class="message-time">${timeStr}</span>
+                    </div>
+                `;
+                chatMessages.innerHTML += aiMsg;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

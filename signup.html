@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-MVSHZFLK');</script>
+    <!-- End Google Tag Manager -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - 리멤버AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .auth-container {
+            max-width: 500px;
+            margin: 60px auto;
+            padding: 50px 40px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .auth-logo img { height: 60px; margin-bottom: 25px; }
+        .auth-title { font-size: 1.8rem; color: var(--navy-primary); margin-bottom: 10px; }
+        .auth-subtitle { color: var(--text-light); margin-bottom: 35px; font-size: 1rem; }
+        .form-group { text-align: left; margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--navy-primary); }
+        .form-control {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.1rem;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .form-control:focus { border-color: var(--gold-secondary); outline: none; }
+        .btn-auth {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: var(--navy-primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: var(--transition);
+        }
+        .btn-auth:hover { background: var(--gold-secondary); }
+        .auth-footer { margin-top: 25px; font-size: 0.95rem; color: var(--text-light); }
+        .auth-footer a { color: var(--navy-primary); font-weight: 600; text-decoration: underline; }
+        .row { display: flex; gap: 15px; }
+        .row .form-group { flex: 1; }
+    </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MVSHZFLK"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div class="auth-container">
+        <div class="auth-logo">
+            <a href="index.html"><img src="logo.png" alt="리멤버AI"></a>
+        </div>
+        <h1 class="auth-title">리멤버AI에 오신 것을 환영합니다</h1>
+        <p class="auth-subtitle">함께 소중한 인생 이야기를 시작해볼까요?</p>
+        
+        <form>
+            <div class="row">
+                <div class="form-group">
+                    <label for="name">성함</label>
+                    <input type="text" id="name" class="form-control" placeholder="홍길동">
+                </div>
+                <div class="form-group">
+                    <label for="birth">출생연도</label>
+                    <input type="number" id="birth" class="form-control" placeholder="1955">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="phone">휴대폰 번호</label>
+                <input type="tel" id="phone" class="form-control" placeholder="010-1234-5678">
+            </div>
+            <div class="form-group">
+                <label for="password">비밀번호 설정</label>
+                <input type="password" id="password" class="form-control" placeholder="비밀번호를 입력해주세요">
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-light); text-align: left; margin-bottom: 20px;">
+                * 회원가입 시 리멤버AI의 <span style="text-decoration: underline;">이용약관</span> 및 <span style="text-decoration: underline;">개인정보 처리방침</span>에 동의하게 됩니다.
+            </p>
+            <button type="submit" class="btn-auth">회원가입 완료</button>
+        </form>
+
+        <div class="auth-footer">
+            이미 계정이 있으신가요? <a href="login.html">로그인하기</a>
+        </div>
+    </div>
+</body>
+</html>
