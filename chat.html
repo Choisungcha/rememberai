@@ -233,6 +233,112 @@
         }
         .send-btn:hover { background-color: #E6CF00; }
 
+        .schedule-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(9, 22, 45, 0.58);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 200;
+        }
+
+        .schedule-modal.is-visible {
+            display: flex;
+        }
+
+        .schedule-card {
+            width: min(100%, 520px);
+            background: white;
+            border-radius: 24px;
+            padding: 28px 24px 24px;
+            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.18);
+        }
+
+        .schedule-card h3 {
+            color: var(--navy-primary);
+            font-size: 1.7rem;
+            margin-bottom: 10px;
+        }
+
+        .schedule-card p {
+            color: var(--text-light);
+            margin-bottom: 18px;
+            line-height: 1.6;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .schedule-day {
+            border: 1px solid #d9dfe8;
+            border-radius: 14px;
+            background: #f8fafc;
+            padding: 12px 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--navy-primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .schedule-day.is-selected {
+            background: var(--navy-primary);
+            border-color: var(--navy-primary);
+            color: white;
+        }
+
+        .schedule-time {
+            margin-bottom: 18px;
+        }
+
+        .schedule-time label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--navy-primary);
+            font-weight: 600;
+        }
+
+        .schedule-time input {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid #d9dfe8;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .schedule-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .schedule-save,
+        .schedule-later {
+            flex: 1;
+            border: none;
+            border-radius: 14px;
+            padding: 14px 16px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .schedule-save {
+            background: var(--navy-primary);
+            color: white;
+        }
+
+        .schedule-later {
+            background: #eef2f7;
+            color: var(--navy-primary);
+        }
+
         /* Animation */
         .message { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -313,8 +419,96 @@
         <button onclick="stopRecording()" class="stop-btn">완료</button>
     </div>
 
+    <div id="scheduleModal" class="schedule-modal" aria-hidden="true">
+        <div class="schedule-card">
+            <h3>다음 대화 시간을 정해볼까요?</h3>
+            <p>첫 이야기를 들려주셔서 감사합니다. 2번째 질문부터는 선생님이 편하신 요일과 시간에 맞춰 다시 찾아뵐 수 있도록 시간을 정해둘게요.</p>
+            <div class="schedule-grid" id="scheduleGrid">
+                <button type="button" class="schedule-day" data-day="월요일">월요일</button>
+                <button type="button" class="schedule-day" data-day="화요일">화요일</button>
+                <button type="button" class="schedule-day" data-day="수요일">수요일</button>
+                <button type="button" class="schedule-day" data-day="목요일">목요일</button>
+                <button type="button" class="schedule-day" data-day="금요일">금요일</button>
+                <button type="button" class="schedule-day" data-day="토요일">토요일</button>
+            </div>
+            <div class="schedule-time">
+                <label for="scheduleTime">원하시는 시간</label>
+                <input type="time" id="scheduleTime" value="09:00">
+            </div>
+            <div class="schedule-actions">
+                <button type="button" class="schedule-later" onclick="closeScheduleModal()">나중에 정할게요</button>
+                <button type="button" class="schedule-save" onclick="saveSchedule()">이 시간으로 저장</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let isRecording = false;
+        let hasCompletedFirstAnswer = false;
+        let selectedScheduleDay = '';
+        const scheduleModal = document.getElementById('scheduleModal');
+        const scheduleTimeInput = document.getElementById('scheduleTime');
+        const profile = JSON.parse(localStorage.getItem('rememberAIProfile') || '{}');
+        const params = new URLSearchParams(window.location.search);
+        const isWelcomeFlow = params.get('flow') === 'welcome';
+
+        initializeChat();
+
+        function initializeChat() {
+            const divider = document.querySelector('.date-divider span');
+            const now = new Date();
+            const weekdays = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+            divider.textContent = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 ${weekdays[now.getDay()]}`;
+
+            const savedSchedule = JSON.parse(localStorage.getItem('rememberAISchedule') || 'null');
+            if (savedSchedule) {
+                selectedScheduleDay = savedSchedule.day;
+                scheduleTimeInput.value = savedSchedule.time || '09:00';
+                document.querySelectorAll('.schedule-day').forEach((button) => {
+                    button.classList.toggle('is-selected', button.dataset.day === savedSchedule.day);
+                });
+            }
+
+            document.querySelectorAll('.schedule-day').forEach((button) => {
+                button.addEventListener('click', function () {
+                    selectedScheduleDay = this.dataset.day;
+                    document.querySelectorAll('.schedule-day').forEach((item) => item.classList.remove('is-selected'));
+                    this.classList.add('is-selected');
+                });
+            });
+
+            if (isWelcomeFlow) {
+                renderWelcomeMessages();
+            }
+        }
+
+        function renderWelcomeMessages() {
+            const applicantName = profile.applicantName || '선생님';
+            const childName = profile.childName || '자녀분';
+            const chatMessages = document.getElementById('chatMessages');
+            const firstQuestion = `
+                <div class="date-divider">
+                    <span>${document.querySelector('.date-divider span').textContent}</span>
+                </div>
+                <div class="security-notice">
+                    "${applicantName}의 이야기는 안전하게 보관되며, 원하실 때만 자녀와 나눌 수 있어요."
+                </div>
+                <div class="message received">
+                    <div class="message-content">
+                        안녕하세요, ${applicantName}. 지금부터 리멤버AI와 첫 대화를 시작해볼게요.
+                    </div>
+                    <span class="message-time">${formatTime(new Date())}</span>
+                </div>
+                <div class="message received">
+                    <div class="message-content">
+                        첫 질문입니다. <b>'${childName}에게 처음 꼭 전하고 싶은 이야기'</b>는 무엇인가요?<br>
+                        ${childName}에게 남기고 싶은 첫 마음이나 기억을 편하게 들려주세요.
+                    </div>
+                    <span class="message-time">${formatTime(new Date())}</span>
+                </div>
+            `;
+            chatMessages.innerHTML = firstQuestion;
+        }
 
         function confirmExit() {
             if (confirm("오늘 대화를 여기까지 할까요? 소중한 기록은 안전하게 저장되었습니다.")) {
@@ -376,13 +570,13 @@
             if (messageText === "") return;
 
             const chatMessages = document.getElementById('chatMessages');
-            const now = new Date();
-            const timeStr = (now.getHours() > 12 ? '오후 ' + (now.getHours()-12) : '오전 ' + now.getHours()) + ':' + now.getMinutes().toString().padStart(2, '0');
+            const timeStr = formatTime(new Date());
+            const safeMessageText = escapeHtml(messageText).replace(/\n/g, '<br>');
 
             // Add user message
             const userMsg = `
                 <div class="message sent">
-                    <div class="message-content">${messageText}</div>
+                    <div class="message-content">${safeMessageText}</div>
                     <span class="message-time">${timeStr}</span>
                 </div>
             `;
@@ -390,17 +584,82 @@
             input.value = "";
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            // Simple AI Auto-Reply after 1 second
+            const isFirstReply = !hasCompletedFirstAnswer;
+            hasCompletedFirstAnswer = true;
+
             setTimeout(() => {
+                const aiResponse = isFirstReply
+                    ? `감사합니다. 지금 들려주신 첫 이야기가 앞으로의 자서전과 페르소나의 시작점이 됩니다. 다음 질문부터는 선생님이 편하신 시간에 이어갈 수 있도록 시간을 정해볼게요.`
+                    : `네, 선생님. 정말 소중하고 따뜻한 기억이네요. 그 당시에 느끼셨던 기분이나 함께했던 사람들에 대해 조금 더 자세히 들려주실 수 있을까요?`;
                 const aiMsg = `
                     <div class="message received">
-                        <div class="message-content">네, 선생님. 정말 소중하고 따뜻한 기억이네요. 그 당시에 느끼셨던 기분이나 함께했던 사람들에 대해 조금 더 자세히 들려주실 수 있을까요?</div>
+                        <div class="message-content">${aiResponse}</div>
                         <span class="message-time">${timeStr}</span>
                     </div>
                 `;
                 chatMessages.innerHTML += aiMsg;
                 chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                if (isFirstReply) {
+                    setTimeout(openScheduleModal, 700);
+                }
             }, 1000);
+        }
+
+        function openScheduleModal() {
+            scheduleModal.classList.add('is-visible');
+            scheduleModal.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeScheduleModal() {
+            scheduleModal.classList.remove('is-visible');
+            scheduleModal.setAttribute('aria-hidden', 'true');
+        }
+
+        function saveSchedule() {
+            if (!selectedScheduleDay) {
+                alert('먼저 원하시는 요일을 선택해주세요.');
+                return;
+            }
+
+            const schedule = {
+                day: selectedScheduleDay,
+                time: scheduleTimeInput.value || '09:00',
+            };
+
+            localStorage.setItem('rememberAISchedule', JSON.stringify(schedule));
+            closeScheduleModal();
+
+            const chatMessages = document.getElementById('chatMessages');
+            const confirmation = document.createElement('div');
+            confirmation.className = 'security-notice';
+            confirmation.textContent = `다음 대화는 매주 ${schedule.day} ${formatScheduleTime(schedule.time)}에 이어가도록 저장했습니다. 실제 알림 발송은 추후 카카오/SMS 연동으로 연결할 수 있습니다.`;
+            chatMessages.appendChild(confirmation);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function formatTime(date) {
+            const hours = date.getHours();
+            const period = hours >= 12 ? '오후' : '오전';
+            const normalized = hours % 12 || 12;
+            return `${period} ${normalized}:${String(date.getMinutes()).padStart(2, '0')}`;
+        }
+
+        function formatScheduleTime(value) {
+            const [hours, minutes] = value.split(':');
+            const hourNumber = Number(hours);
+            const period = hourNumber >= 12 ? '오후' : '오전';
+            const normalized = hourNumber % 12 || 12;
+            return `${period} ${normalized}:${minutes}`;
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
     </script>
 </body>

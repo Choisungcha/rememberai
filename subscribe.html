@@ -271,6 +271,12 @@
             margin-bottom: 12px;
         }
 
+        .success-note {
+            font-size: 0.92rem;
+            color: var(--navy-primary);
+            font-weight: 600;
+        }
+
         .success-link {
             display: inline-flex;
             align-items: center;
@@ -420,9 +426,9 @@
 
                 <div id="successPanel" class="success-panel" aria-live="polite">
                     <h3>신청이 접수되었습니다</h3>
-                    <p>리멤버AI 구독 신청이 정상적으로 전달되었습니다. 이후 안내와 발송 절차는 입력하신 정보 기준으로 진행됩니다.</p>
-                    <p>바로 대화를 체험하고 싶다면 아래 링크에서 챗봇 화면을 확인하실 수 있습니다.</p>
-                    <a href="chat.html" class="success-link">대화 챗봇 보러가기</a>
+                    <p>리멤버AI 구독 신청이 정상적으로 전달되었습니다. 지금 바로 첫 질문에 답하시면서 대화를 시작하실 수 있습니다.</p>
+                    <p class="success-note">잠시 후 첫 질문 화면으로 자동 이동합니다.</p>
+                    <a href="chat.html?flow=welcome" class="success-link">첫 질문으로 바로 가기</a>
                 </div>
 
                 <iframe name="hiddenFormSubmit" title="숨김 제출 프레임" style="display:none;"></iframe>
@@ -436,11 +442,28 @@
         const successPanel = document.getElementById('successPanel');
 
         subscribeForm.addEventListener('submit', function () {
+            const applicantName = document.getElementById('applicantName').value.trim();
+            const applicantPhone = document.getElementById('applicantPhone').value.trim();
+            const childName = document.getElementById('childName').value.trim();
+            const childPhone = document.getElementById('childPhone').value.trim();
+
+            localStorage.setItem('rememberAIProfile', JSON.stringify({
+                applicantName,
+                applicantPhone,
+                childName,
+                childPhone,
+                subscribedAt: new Date().toISOString(),
+            }));
+
             setTimeout(function () {
                 formPanel.classList.add('is-hidden');
                 successPanel.classList.add('is-visible');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }, 700);
+
+            setTimeout(function () {
+                window.location.href = 'chat.html?flow=welcome';
+            }, 1800);
         });
     </script>
 </body>
