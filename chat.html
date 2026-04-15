@@ -442,6 +442,7 @@
         </div>
     </div>
 
+    <script src="config.js"></script>
     <script>
         let isRecording = false;
         let hasCompletedFirstAnswer = false;
@@ -451,6 +452,7 @@
         const profile = JSON.parse(localStorage.getItem('rememberAIProfile') || '{}');
         const params = new URLSearchParams(window.location.search);
         const isWelcomeFlow = params.get('flow') === 'welcome';
+        const appConfig = window.REMEMBER_AI_CONFIG || {};
 
         initializeChat();
 
@@ -616,7 +618,7 @@
             scheduleModal.setAttribute('aria-hidden', 'true');
         }
 
-        function saveSchedule() {
+        async function saveSchedule() {
             if (!selectedScheduleDay) {
                 alert('먼저 원하시는 요일을 선택해주세요.');
                 return;
@@ -630,12 +632,57 @@
             localStorage.setItem('rememberAISchedule', JSON.stringify(schedule));
             closeScheduleModal();
 
+            const syncResult = await syncScheduleToBackend(schedule);
+
             const chatMessages = document.getElementById('chatMessages');
             const confirmation = document.createElement('div');
             confirmation.className = 'security-notice';
-            confirmation.textContent = `다음 대화는 매주 ${schedule.day} ${formatScheduleTime(schedule.time)}에 이어가도록 저장했습니다. 실제 알림 발송은 추후 카카오/SMS 연동으로 연결할 수 있습니다.`;
+            confirmation.textContent = syncResult.message;
             chatMessages.appendChild(confirmation);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function syncScheduleToBackend(schedule) {
+            const webhookUrl = appConfig.scheduleWebhookUrl;
+
+            if (!webhookUrl) {
+                return {
+                    ok: false,
+                    message: `다음 대화는 매주 ${schedule.day} ${formatScheduleTime(schedule.time)}에 이어가도록 저장했습니다. 아직 웹훅이 연결되지 않아 이 기기 브라우저에만 저장된 상태입니다.`,
+                };
+            }
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8',
+                    },
+                    body: JSON.stringify({
+                        applicantName: profile.applicantName || '',
+                        applicantPhone: profile.applicantPhone || '',
+                        childName: profile.childName || '',
+                        childPhone: profile.childPhone || '',
+                        scheduleDay: schedule.day,
+                        scheduleTime: schedule.time,
+                        notificationChannel: '카카오/SMS 예정',
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('웹훅 응답이 정상이 아닙니다.');
+                }
+
+                return {
+                    ok: true,
+                    message: `다음 대화는 매주 ${schedule.day} ${formatScheduleTime(schedule.time)}에 이어가도록 저장했습니다. 알림 발송용 스케줄 시트에도 함께 기록했습니다.`,
+                };
+            } catch (error) {
+                return {
+                    ok: false,
+                    message: `다음 대화는 매주 ${schedule.day} ${formatScheduleTime(schedule.time)}에 이어가도록 저장했습니다. 다만 스케줄 서버에는 아직 연결되지 않아 이 기기에만 저장되었습니다.`,
+                };
+            }
         }
 
         function formatTime(date) {
