@@ -7,6 +7,7 @@
 파일:
 - [google-apps-script/send-chatbot-link.gs](/Users/cschan/Documents/GitHub/rememberAI_test1/google-apps-script/send-chatbot-link.gs)
 - [google-apps-script/schedule-webhook.gs](/Users/cschan/Documents/GitHub/rememberAI_test1/google-apps-script/schedule-webhook.gs)
+- [google-apps-script/auth-webhook.gs](/Users/cschan/Documents/GitHub/rememberAI_test1/google-apps-script/auth-webhook.gs)
 - [config.js](/Users/cschan/Documents/GitHub/rememberAI_test1/config.js)
 
 적용 방법:
@@ -41,3 +42,25 @@ window.REMEMBER_AI_CONFIG = {
 연결되면:
 - `chat.html`에서 첫 답변 후 저장한 요일/시간이 `대화 스케줄` 시트에 적재됩니다.
 - 이후 이 시트를 기준으로 카카오/SMS 알림 발송 스크립트를 붙일 수 있습니다.
+
+## 회원가입 / 로그인 웹훅
+
+회원가입과 로그인은 Apps Script 웹앱 + `회원` 시트를 사용하는 방식으로 바꿨습니다.
+
+설정 순서:
+1. 구글 스프레드시트의 Apps Script에 [google-apps-script/auth-webhook.gs](/Users/cschan/Documents/GitHub/rememberAI_test1/google-apps-script/auth-webhook.gs) 내용을 추가합니다.
+2. `배포 > 새 배포 > 웹 앱`으로 배포합니다.
+3. 발급된 웹앱 URL을 [config.js](/Users/cschan/Documents/GitHub/rememberAI_test1/config.js)에 넣습니다.
+
+예시:
+```js
+window.REMEMBER_AI_CONFIG = {
+  scheduleWebhookUrl: 'https://script.google.com/macros/s/스케줄배포ID/exec',
+  authWebhookUrl: 'https://script.google.com/macros/s/인증배포ID/exec',
+};
+```
+
+연결되면:
+- [signup.html](/Users/cschan/Documents/GitHub/rememberAI_test1/signup.html)에서 입력한 정보가 `회원` 시트에 저장됩니다.
+- 비밀번호는 평문이 아니라 SHA-256 해시로 저장됩니다.
+- [login.html](/Users/cschan/Documents/GitHub/rememberAI_test1/login.html)은 같은 시트를 기준으로 로그인합니다.

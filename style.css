@@ -81,6 +81,33 @@ nav {
     color: var(--gold-secondary);
 }
 
+.nav-auth-links {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-auth-link {
+    color: var(--navy-primary);
+    font-weight: 600;
+    padding: 10px 14px;
+    border-radius: 999px;
+    transition: var(--transition);
+}
+
+.nav-auth-link:hover {
+    background: rgba(13, 34, 71, 0.06);
+}
+
+.nav-auth-primary {
+    background: var(--navy-primary);
+    color: white;
+}
+
+.nav-auth-primary:hover {
+    background: #153463;
+}
+
 /* Hero Section */
 .hero {
     position: relative;
@@ -342,6 +369,7 @@ footer {
 /* Responsive */
 @media (max-width: 992px) {
     .nav-links { display: none; } /* Hide regular links on mobile to save space */
+    .nav-auth-links { width: 100%; justify-content: flex-end; }
     .hero h1 { font-size: 2.8rem; }
     .features { grid-template-columns: 1fr; }
     .security-grid { flex-direction: column; }

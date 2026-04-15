@@ -10,13 +10,13 @@
     <!-- End Google Tag Manager -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회원가입 - 리멤버AI</title>
+    <title>회원가입 및 구독 신청 - 리멤버AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
         body { background-color: #f8f9fa; }
         .auth-container {
-            max-width: 500px;
+            max-width: 620px;
             margin: 60px auto;
             padding: 50px 40px;
             background: white;
@@ -56,6 +56,47 @@
         .auth-footer a { color: var(--navy-primary); font-weight: 600; text-decoration: underline; }
         .row { display: flex; gap: 15px; }
         .row .form-group { flex: 1; }
+        .info-card {
+            margin-bottom: 24px;
+            padding: 18px 20px;
+            text-align: left;
+            border-radius: 16px;
+            background: #f6f8fb;
+            border: 1px solid #e2e8f0;
+            color: var(--text-light);
+            font-size: 0.96rem;
+        }
+        .info-card strong {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--navy-primary);
+            font-size: 1.02rem;
+        }
+        .checkbox-group {
+            text-align: left;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        .checkbox-group input {
+            margin-top: 4px;
+            accent-color: var(--navy-primary);
+        }
+        .back-home {
+            display: inline-block;
+            margin-top: 18px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        .status-message {
+            margin-top: 16px;
+            font-size: 0.95rem;
+            color: var(--navy-primary);
+            min-height: 24px;
+        }
     </style>
 </head>
 <body>
@@ -67,37 +108,162 @@
         <div class="auth-logo">
             <a href="index.html"><img src="logo.png" alt="리멤버AI"></a>
         </div>
-        <h1 class="auth-title">리멤버AI에 오신 것을 환영합니다</h1>
-        <p class="auth-subtitle">함께 소중한 인생 이야기를 시작해볼까요?</p>
+        <h1 class="auth-title">회원가입과 구독 신청을 한 번에</h1>
+        <p class="auth-subtitle">필수 가입 정보와 자녀 정보를 남기시면 바로 첫 질문으로 이어집니다.</p>
+
+        <div class="info-card">
+            <strong>가입이 완료되면 바로 첫 질문이 시작됩니다</strong>
+            이후 2번째 질문부터는 원하시는 요일과 시간에 맞춰 대화를 이어갈 수 있습니다.
+        </div>
         
-        <form>
+        <form id="signupForm">
             <div class="row">
                 <div class="form-group">
-                    <label for="name">성함</label>
-                    <input type="text" id="name" class="form-control" placeholder="홍길동">
+                    <label for="name">신청인 이름</label>
+                    <input type="text" id="name" class="form-control" placeholder="홍길동" required>
                 </div>
                 <div class="form-group">
                     <label for="birth">출생연도</label>
-                    <input type="number" id="birth" class="form-control" placeholder="1955">
+                    <input type="number" id="birth" class="form-control" placeholder="1955" min="1900" max="2026" required>
                 </div>
             </div>
-            <div class="form-group">
-                <label for="phone">휴대폰 번호</label>
-                <input type="tel" id="phone" class="form-control" placeholder="010-1234-5678">
+            <div class="row">
+                <div class="form-group">
+                    <label for="phone">신청인 휴대폰 번호</label>
+                    <input type="tel" id="phone" class="form-control" placeholder="010-1234-5678" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">이메일 주소</label>
+                    <input type="email" id="email" class="form-control" placeholder="example@email.com" required>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="password">비밀번호 설정</label>
-                <input type="password" id="password" class="form-control" placeholder="비밀번호를 입력해주세요">
+            <div class="row">
+                <div class="form-group">
+                    <label for="childName">발송할 자녀 이름</label>
+                    <input type="text" id="childName" class="form-control" placeholder="자녀 이름" required>
+                </div>
+                <div class="form-group">
+                    <label for="childPhone">자녀 휴대폰 번호</label>
+                    <input type="tel" id="childPhone" class="form-control" placeholder="010-1234-5678" required>
+                </div>
             </div>
-            <p style="font-size: 0.85rem; color: var(--text-light); text-align: left; margin-bottom: 20px;">
-                * 회원가입 시 리멤버AI의 <span style="text-decoration: underline;">이용약관</span> 및 <span style="text-decoration: underline;">개인정보 처리방침</span>에 동의하게 됩니다.
-            </p>
-            <button type="submit" class="btn-auth">회원가입 완료</button>
+            <div class="row">
+                <div class="form-group">
+                    <label for="password">비밀번호 설정</label>
+                    <input type="password" id="password" class="form-control" placeholder="비밀번호를 입력해주세요" minlength="6" required>
+                </div>
+                <div class="form-group">
+                    <label for="passwordConfirm">비밀번호 확인</label>
+                    <input type="password" id="passwordConfirm" class="form-control" placeholder="비밀번호를 다시 입력해주세요" minlength="6" required>
+                </div>
+            </div>
+            <label class="checkbox-group" for="consent">
+                <input type="checkbox" id="consent" required>
+                <span>리멤버AI의 이용약관 및 개인정보 처리방침에 동의하며, 대화 링크 발송과 구독 안내를 위한 개인정보 수집·이용에 동의합니다.</span>
+            </label>
+            <button type="submit" class="btn-auth">회원가입하고 첫 질문 시작하기</button>
         </form>
+        <p id="statusMessage" class="status-message"></p>
 
         <div class="auth-footer">
             이미 계정이 있으신가요? <a href="login.html">로그인하기</a>
         </div>
+        <a href="index.html" class="back-home">홈으로 돌아가기</a>
     </div>
+    <script src="config.js"></script>
+    <script>
+        const signupForm = document.getElementById('signupForm');
+        const statusMessage = document.getElementById('statusMessage');
+        const appConfig = window.REMEMBER_AI_CONFIG || {};
+
+        signupForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const password = document.getElementById('password').value;
+            const passwordConfirm = document.getElementById('passwordConfirm').value;
+
+            if (password !== passwordConfirm) {
+                alert('비밀번호가 일치하지 않습니다.');
+                return;
+            }
+
+            const account = {
+                name: document.getElementById('name').value.trim(),
+                birth: document.getElementById('birth').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                childName: document.getElementById('childName').value.trim(),
+                childPhone: document.getElementById('childPhone').value.trim(),
+                password,
+                createdAt: new Date().toISOString(),
+            };
+
+            statusMessage.textContent = '회원가입 정보를 저장하는 중입니다...';
+
+            const result = await registerAccount(account);
+            if (!result.ok) {
+                statusMessage.textContent = result.message;
+                alert(result.message);
+                return;
+            }
+
+            const savedUser = result.user;
+            localStorage.setItem('rememberAIProfile', JSON.stringify({
+                applicantName: savedUser.name,
+                applicantPhone: savedUser.phone,
+                childName: savedUser.childName,
+                childPhone: savedUser.childPhone,
+                subscribedAt: account.createdAt,
+            }));
+            localStorage.setItem('rememberAIAuth', JSON.stringify({
+                isLoggedIn: true,
+                memberId: savedUser.memberId,
+                name: savedUser.name,
+                phone: savedUser.phone,
+                email: savedUser.email,
+            }));
+
+            statusMessage.textContent = '회원가입이 완료되었습니다. 첫 질문으로 이동합니다...';
+            window.location.href = 'chat.html?flow=welcome';
+        });
+
+        async function registerAccount(account) {
+            const webhookUrl = appConfig.authWebhookUrl;
+
+            if (!webhookUrl) {
+                return {
+                    ok: false,
+                    message: '회원가입 서버가 아직 연결되지 않았습니다. config.js에 authWebhookUrl을 설정해주세요.',
+                };
+            }
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8',
+                    },
+                    body: JSON.stringify({
+                        action: 'register',
+                        name: account.name,
+                        birth: account.birth,
+                        phone: account.phone,
+                        email: account.email,
+                        password: account.password,
+                        childName: account.childName,
+                        childPhone: account.childPhone,
+                    }),
+                });
+
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                return {
+                    ok: false,
+                    message: '회원가입 서버에 연결하지 못했습니다.',
+                };
+            }
+        }
+    </script>
 </body>
 </html>

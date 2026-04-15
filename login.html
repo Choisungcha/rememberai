@@ -55,6 +55,7 @@
         .auth-footer { margin-top: 30px; font-size: 1rem; color: var(--text-light); }
         .auth-footer a { color: var(--navy-primary); font-weight: 600; text-decoration: underline; }
         .back-home { display: inline-block; margin-top: 20px; color: var(--text-light); font-size: 0.9rem; }
+        .status-message { margin-top: 16px; min-height: 24px; color: var(--navy-primary); font-size: 0.95rem; }
     </style>
 </head>
 <body>
@@ -72,19 +73,92 @@
         <form>
             <div class="form-group">
                 <label for="email">휴대폰 번호 또는 이메일</label>
-                <input type="text" id="email" class="form-control" placeholder="내용을 입력해주세요">
+                <input type="text" id="email" class="form-control" placeholder="내용을 입력해주세요" required>
             </div>
             <div class="form-group">
                 <label for="password">비밀번호</label>
-                <input type="password" id="password" class="form-control" placeholder="비밀번호를 입력해주세요">
+                <input type="password" id="password" class="form-control" placeholder="비밀번호를 입력해주세요" required>
             </div>
             <button type="submit" class="btn-auth">로그인하기</button>
         </form>
+        <p id="statusMessage" class="status-message"></p>
 
         <div class="auth-footer">
             아직 회원이 아니신가요? <a href="signup.html">회원가입하기</a>
         </div>
         <a href="index.html" class="back-home">홈으로 돌아가기</a>
     </div>
+    <script src="config.js"></script>
+    <script>
+        const loginForm = document.querySelector('form');
+        const statusMessage = document.getElementById('statusMessage');
+        const appConfig = window.REMEMBER_AI_CONFIG || {};
+
+        loginForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const identifier = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            statusMessage.textContent = '로그인 정보를 확인하는 중입니다...';
+
+            const result = await loginAccount(identifier, password);
+            if (!result.ok) {
+                statusMessage.textContent = result.message;
+                alert(result.message);
+                return;
+            }
+
+            const user = result.user;
+            localStorage.setItem('rememberAIAuth', JSON.stringify({
+                isLoggedIn: true,
+                memberId: user.memberId,
+                name: user.name,
+                phone: user.phone,
+                email: user.email,
+            }));
+            localStorage.setItem('rememberAIProfile', JSON.stringify({
+                applicantName: user.name,
+                applicantPhone: user.phone,
+                childName: user.childName,
+                childPhone: user.childPhone,
+            }));
+
+            statusMessage.textContent = '로그인되었습니다. 대화 화면으로 이동합니다...';
+            window.location.href = 'chat.html';
+        });
+
+        async function loginAccount(identifier, password) {
+            const webhookUrl = appConfig.authWebhookUrl;
+
+            if (!webhookUrl) {
+                return {
+                    ok: false,
+                    message: '로그인 서버가 아직 연결되지 않았습니다. config.js에 authWebhookUrl을 설정해주세요.',
+                };
+            }
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8',
+                    },
+                    body: JSON.stringify({
+                        action: 'login',
+                        identifier: identifier,
+                        password: password,
+                    }),
+                });
+
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                return {
+                    ok: false,
+                    message: '로그인 서버에 연결하지 못했습니다.',
+                };
+            }
+        }
+    </script>
 </body>
 </html>
